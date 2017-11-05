@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -23,8 +24,10 @@ public class CheckExecutor
     private final String startUrl;
     private final CheckResultsCollector resultsCollector;
 
-    private Queue<LinkCheck> linksToCheck = new ArrayBlockingQueue<LinkCheck>(10000);
-    private final ExecutorService executorService = Executors.newFixedThreadPool(8);
+    private final ExecutorService checkThreads = Executors.newFixedThreadPool(8);
+    private final ExecutorService orchestratorThread = Executors.newFixedThreadPool(1);
+    private Queue<LinkCheck> linksToCheck = new ArrayBlockingQueue<>(10000);
+    private Queue<CheckResult> executedChecks = new ArrayBlockingQueue<>(10000);
 
     public CheckExecutor(LinkCheckFactory checkFactory,
                          @Value("${config.startUrl}") String startUrl,
@@ -35,10 +38,51 @@ public class CheckExecutor
         this.resultsCollector = resultsCollector;
     }
 
-    public void start() throws URISyntaxException
+    void start() throws URISyntaxException
     {
+        orchestratorThread.submit(new CheckOrchestrator());
+
         linksToCheck.offer(checkFactory.createCheck(startUrl));
-        executorService.submit(new InnerExecutor());
+        checkThreads.submit(new InnerExecutor());
+
+        orchestratorThread.shutdown();
+    }
+
+    private final class CheckOrchestrator implements Runnable
+    {
+        @Override
+        public void run()
+        {
+            while (true)
+            {
+                CheckResult checkResult = executedChecks.poll();
+                if (checkResult == null)
+                {
+                    continue;
+                }
+                resultsCollector.storeCheckResult(checkResult);
+                Map<String, Collection<URI>> collectedLinks = checkResult.getCollectedLinks();
+                if (collectedLinks != null)
+                {
+                    for (Collection<URI> links : collectedLinks.values())
+                    {
+                        for (URI link : links)
+                        {
+                            if (resultsCollector.registerToBeChecked(link))
+                            {
+                                linksToCheck.offer(checkFactory.createCheck(link));
+                            }
+                        }
+                    }
+                }
+
+                if (resultsCollector.noMoreChecks())
+                {
+                    linksToCheck.offer(checkFactory.stopCheck());
+                    break;
+                }
+            }
+        }
     }
 
     private final class InnerExecutor implements Runnable
@@ -53,27 +97,26 @@ public class CheckExecutor
                 {
                     continue;
                 }
+
                 if (!check.isStopCheck())
                 {
-                    executorService.submit(new InnerChecker(check));
-                }
-                else
+                    checkThreads.submit(new InnerChecker(check));
+                } else
                 {
                     logger.debug("Got STOP signal. No more checks");
                     break;
                 }
             }
 
-            executorService.shutdown();
+            checkThreads.shutdown();
         }
     }
-
 
     private final class InnerChecker implements Runnable
     {
         final LinkCheck linkCheck;
 
-        public InnerChecker(LinkCheck linkToCheck)
+        InnerChecker(LinkCheck linkToCheck)
         {
             this.linkCheck = linkToCheck;
         }
@@ -81,46 +124,18 @@ public class CheckExecutor
         @Override
         public void run()
         {
+            CheckResult result;
             try
             {
-                // resultsCollector should be given original link before the check
-
-                resultsCollector.registerToBeChecked(linkCheck.getOriginalLink());
-                if (resultsCollector.noMoreChecks())
-                {
-                    logger.debug("Offering STOP signal");
-                    linksToCheck.offer(checkFactory.stopCheck());
-                }
-
-                CheckResult checkResult = linkCheck.call();
-                Map<String, URI> collectedLinks = checkResult.getCollectedLinks();
-                if (collectedLinks != null)
-                {
-                    for (URI link : collectedLinks.values())
-                    {
-                        resultsCollector.registerToBeChecked(link);
-                    }
-                }
-
-                if (!resultsCollector.storeCheckResult(checkResult))
-                {
-                    linksToCheck.offer(checkFactory.stopCheck());
-                }
-                else
-                {
-                    if (collectedLinks != null)
-                    {
-                        for (URI link : collectedLinks.values())
-                        {
-                            linksToCheck.offer(checkFactory.createCheck(link));
-                        }
-                    }
-                }
+                result = linkCheck.call();
             }
             catch (Exception ex)
             {
-                logger.error("", ex);
+                logger.debug("ERROR when checking", ex);
+                result = new CheckResult(linkCheck.getOriginalLink(), ex.getMessage());
             }
+
+            executedChecks.offer(result);
         }
     }
 

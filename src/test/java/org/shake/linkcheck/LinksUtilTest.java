@@ -1,33 +1,29 @@
 package org.shake.linkcheck;
 
-import com.google.common.collect.Maps;
-import org.junit.Assert;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.Collection;
 
 import static org.junit.Assert.*;
 
 public class LinksUtilTest
 {
     @Test
-    public void link() throws Exception
+    public void linksFromObject() throws Exception
     {
-        Map<String, Object> map = Maps.newHashMap();
-        Map<String, Object> innerMap = Maps.newHashMap();
-        Map<String, Object> innerInnerMap = Maps.newHashMap();
+        String json = "{\"a\": 1, \"b\": {\"c1\": 22, \"c2\" : \"http://host\"}}";
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readValue(json, JsonNode.class);
+        Collection<URI> uris = LinksUtil.link("a.b.c2", jsonNode);
 
-        map.put("a", innerMap);
-        innerMap.put("b", innerInnerMap);
+        assertNotNull(uris);
+        assertTrue(uris.isEmpty());
 
-        innerInnerMap.put("c", "http://host");
-
-        URI link = LinksUtil.link("a.b.c", map);
-
-        assertNotNull(link);
-        assertEquals("http://host", link.toString());
+        uris = LinksUtil.link("b.c2", jsonNode);
+        assertEquals("http://host", uris.iterator().next().toString());
     }
 
 }

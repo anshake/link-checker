@@ -1,5 +1,6 @@
 package org.shake.linkcheck;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.shake.linkcheck.model.CheckResult;
 import org.shake.linkcheck.model.EndpointsConfig;
 import org.shake.linkcheck.model.EndpointsConfigEntry;
@@ -13,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Nonnull;
 import java.net.URI;
-import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -74,18 +75,18 @@ class LinkCheck
         try
         {
             logger.debug("Checking '{}' ...", link);
-            ResponseEntity<Map> responseEntity = rest.exchange(link, endpoint.getMethod(), HttpEntity.EMPTY, Map.class);
+            ResponseEntity<JsonNode> responseEntity = rest.exchange(link, endpoint.getMethod(), HttpEntity.EMPTY, JsonNode.class);
             result = new CheckResult(link, responseEntity.getStatusCode());
             Set<String> fields = endpoint.getFields();
             if (fields != null && !fields.isEmpty())
             {
-                Map body = responseEntity.getBody();
+                JsonNode body = responseEntity.getBody();
                 for (String fld : fields)
                 {
                     try
                     {
-                        URI link = LinksUtil.link(fld, body);
-                        result.addCollectedLink(fld, link);
+                        Collection<URI> links = LinksUtil.link(fld, body);
+                        result.addCollectedLinks(fld, links);
                     }
                     catch (Exception ex)
                     {

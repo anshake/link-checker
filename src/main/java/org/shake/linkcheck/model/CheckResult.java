@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Map;
 
 public class CheckResult
@@ -13,8 +14,7 @@ public class CheckResult
     private final HttpStatus status;
     private final String message;
 
-    //TODO add support for multiple links per field (in case the field is array)
-    private final Map<String, URI> collectedLinks = Maps.newHashMap();
+    private final Map<String, Collection<URI>> collectedLinks = Maps.newHashMap();
 
     public CheckResult(URI link, String message) {
         this.originalLink = link;
@@ -22,21 +22,20 @@ public class CheckResult
         this.status = null;
     }
 
-
     public CheckResult(URI link, HttpStatus status) {
         this.originalLink = link;
         this.status = status;
         this.message = status.getReasonPhrase();
     }
 
-    public CheckResult addCollectedLink(String field, URI link)
+    public CheckResult addCollectedLinks(String field, Collection<URI> links)
     {
-        if (StringUtils.isEmpty(field) || link == null)
+        if (StringUtils.isEmpty(field) || links == null)
         {
             return this;
         }
 
-        collectedLinks.put(field, link);
+        collectedLinks.put(field, links);
         return this;
     }
 
@@ -55,7 +54,7 @@ public class CheckResult
         return status;
     }
 
-    public Map<String, URI> getCollectedLinks()
+    public Map<String, Collection<URI>> getCollectedLinks()
     {
         return collectedLinks;
     }
