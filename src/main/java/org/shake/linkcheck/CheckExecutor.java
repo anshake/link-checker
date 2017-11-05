@@ -3,7 +3,6 @@ package org.shake.linkcheck;
 import org.shake.linkcheck.model.CheckResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -86,11 +85,7 @@ public class CheckExecutor
             {
                 // resultsCollector should be given original link before the check
 
-                boolean registered = resultsCollector.registerToBeChecked(linkCheck.getOriginalLink());
-//                if (!registered)
-//                {
-//                    return;
-//                }
+                resultsCollector.registerToBeChecked(linkCheck.getOriginalLink());
                 if (resultsCollector.noMoreChecks())
                 {
                     logger.debug("Offering STOP signal");
