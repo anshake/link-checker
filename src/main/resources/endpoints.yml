@@ -1,0 +1,9 @@
+/technoweenie:
+  method: GET
+  fields:
+  - url
+  - followers_url
+/subbase/endpoint2:
+  method: GET
+  fields:
+  - links.nested.link

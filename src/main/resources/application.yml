@@ -1,0 +1,8 @@
+config:
+  startUrl: https://api.github.com/users/technoweenie
+  endpoints: classpath:endpoints.yml
+
+logging:
+  level:
+    org.apache.commons.beanutils: WARN
+    org.shake.linkcheck: DEBUG

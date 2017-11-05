@@ -1,0 +1,9 @@
+{
+  "links": {
+    "nested": {
+      "link": "http://sample.com/me/endpoint1/mode=bytype",
+      "title": "bytype"
+    }
+  },
+  "someotherfield": {}
+}
