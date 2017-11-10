@@ -30,7 +30,7 @@ public class LinksUtilTest
     @Test
     public void linksFromArray() throws Exception
     {
-        String json = "[{\"a\": 1, \"b\": {\"c1\": 22, \"c2\" : \"http://host\"}}, {\"b\": {\"c2\": \"https://host2\"}}]";
+        String json = "[{\"a\": 1, \"b\": {\"c1\": 22, \"c2\" : \"http://host\"}}, {\"b\": {\"c2\":  \"https://host2\"}}]";
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readValue(json, JsonNode.class);
         Collection<URI> uris = LinksUtil.link("b.c2", jsonNode);

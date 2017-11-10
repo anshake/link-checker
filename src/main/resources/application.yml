@@ -1,6 +1,6 @@
-config:
-  startUrl: https://api.github.com/users/technoweenie
-  endpoints: classpath:endpoints.yml
+basedir: file:./config
+start-url: https://api.github.com/users/technoweenie
+endpoints: ${basedir}/endpoints.yml
 
 logging:
   level:

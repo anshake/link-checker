@@ -30,7 +30,7 @@ public class CheckExecutor
     private Queue<CheckResult> executedChecks = new ArrayBlockingQueue<>(10000);
 
     public CheckExecutor(LinkCheckFactory checkFactory,
-                         @Value("${config.startUrl}") String startUrl,
+                         @Value("${start-url}") String startUrl,
                          CheckResultsCollector resultsCollector)
     {
         this.checkFactory = checkFactory;

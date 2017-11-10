@@ -59,7 +59,7 @@ class LinkCheck
 
     /**
      * Checks a give link and collects links from the response
-     * @return check result (colleced links + original link + request status)
+     * @return check result (collected links + original link + request status)
      * @throws Exception ..
      */
     @Nonnull CheckResult call() throws Exception
@@ -67,7 +67,6 @@ class LinkCheck
         EndpointsConfigEntry endpoint = config.detectEndpoint(link);
         if (endpoint == null)
         {
-            logger.info("Could not detect endpoint from URI {}", link);
             return new CheckResult(link, "Does not match any of specified endpoints");
         }
 

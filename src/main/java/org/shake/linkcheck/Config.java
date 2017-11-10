@@ -29,7 +29,7 @@ public class Config
     }
 
     @Bean
-    public EndpointsConfig endpoints(@Value("${config.endpoints}") Resource endpointsRes, YAMLMapper mapper) throws IOException
+    public EndpointsConfig endpoints(@Value("${endpoints}") Resource endpointsRes, YAMLMapper mapper) throws IOException
     {
         TypeReference<Map<String, EndpointsConfigEntry>> tr = new TypeReference<Map<String, EndpointsConfigEntry>>(){};
         Map<String, EndpointsConfigEntry> endpointsConfig = mapper.readValue(endpointsRes.getInputStream(), tr);
