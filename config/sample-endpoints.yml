@@ -1,8 +1,9 @@
-/technoweenie:
+/anshake:
   method: GET
   fields:
   - url
   - followers_url
+
 /subbase/endpoint2:
   method: GET
   fields:

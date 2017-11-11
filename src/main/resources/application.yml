@@ -2,11 +2,11 @@ baseprotocol: "file:"
 basedir: ./config
 fullbasedir: ${baseprotocol}${basedir}
 
-start-url: https://api.github.com/users/technoweenie
-endpoints: ${fullbasedir}/endpoints.yml
+start-url: https://api.github.com/users/anshake
+endpoints: ${fullbasedir}/sample-endpoints.yml
 
 logging:
   level:
     org.apache.commons.beanutils: WARN
     org.shake.linkcheck: DEBUG
-  file: ${basedir}/log/line-checker.log
+#  file: ${basedir}/log/line-checker.log
