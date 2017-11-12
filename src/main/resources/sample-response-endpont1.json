@@ -1,8 +1,0 @@
-{
-  "links": {
-    "bytype": "http://sample.com/me/endpoint1/mode=bytype",
-    "bycode": "http://sample.com/me/endpoint1/mode=bycode",
-    "byname": "http://sample.com/me/endpoint1/mode=byname"
-  },
-  "someotherfield": {}
-}
