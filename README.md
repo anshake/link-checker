@@ -8,7 +8,7 @@ for each collected link.
 
 It stops when:
 - there are no more (non-visited) links left
-- `TBD` (there will be support for use-defined rules)
+- `TBD` (there will be support for user-defined rules)
 
 Configuration
 -------------
