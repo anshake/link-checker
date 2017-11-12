@@ -1,8 +1,12 @@
-basedir: file:./config
-start-url: https://api.github.com/users/technoweenie
-endpoints: ${basedir}/endpoints.yml
+baseprotocol: "file:"
+basedir: ./config
+fullbasedir: ${baseprotocol}${basedir}
+
+start-url: https://api.github.com/users/anshake
+endpoints: ${fullbasedir}/sample-endpoints.yml
 
 logging:
   level:
     org.apache.commons.beanutils: WARN
     org.shake.linkcheck: DEBUG
+#  file: ${basedir}/log/line-checker.log
