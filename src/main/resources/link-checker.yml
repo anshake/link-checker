@@ -3,10 +3,14 @@ basedir: ./config
 fullbasedir: ${baseprotocol}${basedir}
 
 start-url: https://api.github.com/users/anshake
-endpoints: ${fullbasedir}/endpoints.yml
+api-endpoints: ${fullbasedir}/endpoints.yml
 
 logging:
   level:
     org.apache.commons.beanutils: WARN
     org.shake.linkcheck: DEBUG
 #  file: ${basedir}/log/line-checker.log
+
+spring:
+  jmx:
+    enabled: false
