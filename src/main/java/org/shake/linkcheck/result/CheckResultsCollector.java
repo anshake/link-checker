@@ -1,4 +1,4 @@
-package org.shake.linkcheck;
+package org.shake.linkcheck.result;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -33,7 +33,6 @@ public class CheckResultsCollector
             visited.put(checkResult.getOriginalLink(), checkResult);
         }
 
-        //TODO this has to use some FinishStrategy to determine if the collector can accept more results
         return !noMoreChecks();
     }
 
@@ -56,5 +55,10 @@ public class CheckResultsCollector
     public boolean noMoreChecks()
     {
         return toBeChecked.isEmpty();
+    }
+
+    public int visitedCount()
+    {
+        return this.visited.size();
     }
 }
