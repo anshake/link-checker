@@ -1,6 +1,8 @@
 package org.shake.linkcheck;
 
 import org.shake.linkcheck.model.CheckResult;
+import org.shake.linkcheck.result.CheckResultsCollector;
+import org.shake.linkcheck.result.CheckStatusReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,9 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URISyntaxException;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 @Service
 public class CheckExecutor
@@ -19,30 +19,33 @@ public class CheckExecutor
 
     private final LinkCheckFactory checkFactory;
     private final String startUrl;
+    private final CheckStatusReporter reporter;
 
     private final ExecutorService checkThreads = Executors.newFixedThreadPool(8);
-    private final ExecutorService orchestratorThread = Executors.newFixedThreadPool(1);
-    private final ExecutorService executorThread = Executors.newFixedThreadPool(1);
+
+    private final ExecutorService serviceThreads = Executors.newCachedThreadPool();
 
     private Queue<LinkCheck> linksToCheck = new ArrayBlockingQueue<>(10000);
     private Queue<CheckResult> checkResults = new ArrayBlockingQueue<>(10000);
 
     public CheckExecutor(LinkCheckFactory checkFactory,
-                         @Value("${start-url}") String startUrl)
+                         @Value("${start-url}") String startUrl,
+                         CheckStatusReporter reporter)
     {
         this.checkFactory = checkFactory;
         this.startUrl = startUrl;
+        this.reporter = reporter;
     }
 
-    void start() throws URISyntaxException
+    void start() throws URISyntaxException, ExecutionException, InterruptedException
     {
-        orchestratorThread.submit(new CheckOrchestrator(linksToCheck, checkResults, checkFactory, null));
+        Future<CheckResultsCollector> orchestrator = serviceThreads.submit(new CheckOrchestrator(linksToCheck, checkResults, checkFactory, null));
 
         linksToCheck.offer(checkFactory.createCheck(startUrl));
-        executorThread.submit(new InnerExecutor());
+        serviceThreads.submit(new InnerExecutor());
+        serviceThreads.shutdown();
 
-        orchestratorThread.shutdown();
-        executorThread.shutdown();
+        reporter.writeReport(orchestrator.get());
     }
 
     private final class InnerExecutor implements Runnable

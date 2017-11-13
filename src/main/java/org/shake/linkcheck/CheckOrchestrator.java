@@ -11,9 +11,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 
-public class CheckOrchestrator implements Runnable
+public class CheckOrchestrator implements Callable<CheckResultsCollector>
 {
     private final Queue<LinkCheck> toBeChecked;
     private final Queue<CheckResult> resultsQueue;
@@ -44,7 +45,7 @@ public class CheckOrchestrator implements Runnable
     }
 
     @Override
-    public void run()
+    public CheckResultsCollector call()
     {
         while (true)
         {
@@ -81,11 +82,12 @@ public class CheckOrchestrator implements Runnable
                 toBeChecked.offer(checkFactory.createCheck(link));
             }
         }
+
+        return this.resultsCollector;
     }
 
     private void stopSignal()
     {
         toBeChecked.offer(checkFactory.stopCheck());
     }
-
 }

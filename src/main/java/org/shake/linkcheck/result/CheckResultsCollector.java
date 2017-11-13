@@ -5,13 +5,11 @@ import com.google.common.collect.Sets;
 import org.shake.linkcheck.model.CheckResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
-@Service
 public class CheckResultsCollector
 {
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -24,19 +22,19 @@ public class CheckResultsCollector
      * @param checkResult
      * @return <code>false</code> if the collector accepts no more check results
      */
-    public synchronized boolean storeCheckResult(CheckResult checkResult)
+    public void storeCheckResult(CheckResult checkResult)
     {
-        if (checkResult != null)
+        if (checkResult == null)
         {
-            logger.debug("[checked  ] {} '{}' {}", checkResult.getStatus(), checkResult.getMessage(), checkResult.getOriginalLink());
-            toBeChecked.remove(checkResult.getOriginalLink());
-            visited.put(checkResult.getOriginalLink(), checkResult);
+            return;
         }
 
-        return !noMoreChecks();
+        logger.debug("[checked  ] {} '{}' {}", checkResult.getStatus(), checkResult.getMessage(), checkResult.getOriginalLink());
+        toBeChecked.remove(checkResult.getOriginalLink());
+        visited.put(checkResult.getOriginalLink(), checkResult);
     }
 
-    public synchronized boolean registerToBeChecked(URI originalLink)
+    public boolean registerToBeChecked(URI originalLink)
     {
         if (visited.containsKey(originalLink))
         {
@@ -52,12 +50,12 @@ public class CheckResultsCollector
         return added;
     }
 
-    public boolean noMoreChecks()
+    boolean noMoreChecks()
     {
         return toBeChecked.isEmpty();
     }
 
-    public int visitedCount()
+    int visitedCount()
     {
         return this.visited.size();
     }

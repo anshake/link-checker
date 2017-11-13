@@ -6,6 +6,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
 
 @SpringBootApplication
 public class Bootstrap
@@ -15,7 +16,7 @@ public class Bootstrap
         System.setProperty("spring.config.name", "link-checker");
     }
 
-    public static void main(String[] args) throws URISyntaxException
+    public static void main(String[] args) throws URISyntaxException, ExecutionException, InterruptedException
     {
         SpringApplicationBuilder appBuilder = new SpringApplicationBuilder();
         SpringApplication app = appBuilder.sources(Bootstrap.class).build(args);
