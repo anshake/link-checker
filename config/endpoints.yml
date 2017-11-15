@@ -3,6 +3,14 @@
   fields:
   - url
   - followers_url
+  headers:
+    Content-Type: application/json
+    x-type: abcd;
+  body: '
+        {
+          "abc" : "ecd",
+          "a1": "s2"
+        }'
 
 /subbase/endpoint2:
   method: GET

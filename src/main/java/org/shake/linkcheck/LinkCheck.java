@@ -7,6 +7,7 @@ import org.shake.linkcheck.model.EndpointsConfigEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
@@ -15,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -74,7 +76,17 @@ class LinkCheck
         try
         {
             logger.debug("Checking '{}' ...", link);
-            ResponseEntity<JsonNode> responseEntity = rest.exchange(link, endpoint.getMethod(), HttpEntity.EMPTY, JsonNode.class);
+            HttpHeaders headers = null;
+            if (endpoint.getHeaders() != null)
+            {
+                headers = new HttpHeaders();
+                for (Map.Entry<String, String> header : endpoint.getHeaders().entrySet())
+                {
+                    headers.add(header.getKey(), header.getValue());
+                }
+            }
+            HttpEntity<String> entity = new HttpEntity<>(endpoint.getBody(), headers);
+            ResponseEntity<JsonNode> responseEntity = rest.exchange(link, endpoint.getMethod(), entity, JsonNode.class);
             result = new CheckResult(link, responseEntity.getStatusCode());
             Set<String> fields = endpoint.getFields();
             if (fields != null && !fields.isEmpty())

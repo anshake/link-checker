@@ -1,6 +1,8 @@
 package org.shake.linkcheck;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import org.shake.linkcheck.model.EndpointsConfig;
 import org.shake.linkcheck.model.EndpointsConfigEntry;
@@ -17,9 +19,9 @@ import java.util.Map;
 public class Config
 {
     @Bean
-    public YAMLMapper yamlMapper()
+    public ObjectMapper yamlMapper()
     {
-        return new YAMLMapper();
+        return new YAMLMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Bean
@@ -29,10 +31,13 @@ public class Config
     }
 
     @Bean
-    public EndpointsConfig endpoints(@Value("${api-endpoints}") Resource endpointsRes, YAMLMapper mapper) throws IOException
+    public EndpointsConfig endpoints(@Value("${api-endpoints}") Resource endpointsRes, ObjectMapper yamlMapper) throws
+            IOException
     {
-        TypeReference<Map<String, EndpointsConfigEntry>> tr = new TypeReference<Map<String, EndpointsConfigEntry>>(){};
-        Map<String, EndpointsConfigEntry> endpointsConfig = mapper.readValue(endpointsRes.getInputStream(), tr);
+        TypeReference<Map<String, EndpointsConfigEntry>> tr = new TypeReference<Map<String, EndpointsConfigEntry>>()
+        {
+        };
+        Map<String, EndpointsConfigEntry> endpointsConfig = yamlMapper.readValue(endpointsRes.getInputStream(), tr);
         EndpointsConfig config = new EndpointsConfig();
         config.setEndpoints(endpointsConfig);
         return config;

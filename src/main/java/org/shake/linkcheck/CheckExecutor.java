@@ -15,16 +15,12 @@ import java.util.concurrent.*;
 @Service
 public class CheckExecutor
 {
-    private Logger logger = LoggerFactory.getLogger(getClass());
-
     private final LinkCheckFactory checkFactory;
     private final String startUrl;
     private final CheckStatusReporter reporter;
-
     private final ExecutorService checkThreads = Executors.newFixedThreadPool(8);
-
     private final ExecutorService serviceThreads = Executors.newCachedThreadPool();
-
+    private Logger logger = LoggerFactory.getLogger(getClass());
     private Queue<LinkCheck> linksToCheck = new ArrayBlockingQueue<>(10000);
     private Queue<CheckResult> checkResults = new ArrayBlockingQueue<>(10000);
 
@@ -39,13 +35,21 @@ public class CheckExecutor
 
     void start() throws URISyntaxException, ExecutionException, InterruptedException
     {
-        Future<CheckResultsCollector> orchestrator = serviceThreads.submit(new CheckOrchestrator(linksToCheck, checkResults, checkFactory, null));
+        Future<CheckResultsCollector> orchestrator = serviceThreads.submit(
+                new CheckOrchestrator(linksToCheck, checkResults, checkFactory, null));
 
         linksToCheck.offer(checkFactory.createCheck(startUrl));
         serviceThreads.submit(new InnerExecutor());
         serviceThreads.shutdown();
 
-        reporter.writeReport(orchestrator.get());
+        try
+        {
+            reporter.writeReport(orchestrator.get());
+        }
+        catch (Exception ex)
+        {
+            //
+        }
     }
 
     private final class InnerExecutor implements Runnable
@@ -65,7 +69,8 @@ public class CheckExecutor
                 {
                     logger.debug("Got STOP signal. No more checks");
                     break;
-                } else
+                }
+                else
                 {
                     checkThreads.submit(new InnerChecker(check));
                 }
