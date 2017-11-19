@@ -1,11 +1,12 @@
 package org.shake.linkcheck.model;
 
-import com.google.common.collect.Maps;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 
+@ConfigurationProperties("setup")
 public class EndpointsConfig
 {
     private Map<String, EndpointsConfigEntry> endpoints;

@@ -3,7 +3,6 @@ basedir: ./config
 fullbasedir: ${baseprotocol}${basedir}
 
 start-url: https://api.github.com/users/anshake
-api-endpoints: ${fullbasedir}/endpoints.yml
 
 output:
   report: ${fullbasedir}/out/report.tsv
