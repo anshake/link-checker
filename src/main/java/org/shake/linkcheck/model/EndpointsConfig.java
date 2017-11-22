@@ -1,40 +1,47 @@
 package org.shake.linkcheck.model;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.util.AntPathMatcher;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
 @ConfigurationProperties("setup")
 public class EndpointsConfig
 {
-    private Map<String, EndpointsConfigEntry> endpoints;
+    private List<FieldsAwareConfigEntry> endpoints;
+    private EndpointsConfigEntry start;
 
-
-    public Map<String, EndpointsConfigEntry> getEndpoints()
+    public List<FieldsAwareConfigEntry> getEndpoints()
     {
         return endpoints;
     }
 
-    public void setEndpoints(Map<String, EndpointsConfigEntry> endpoints)
+    public void setEndpoints(List<FieldsAwareConfigEntry> endpoints)
     {
         this.endpoints = endpoints;
     }
 
-    public Collection<String> keys()
+    public EndpointsConfigEntry getStart()
     {
-        return this.endpoints.keySet();
+        return start;
     }
 
-    public EndpointsConfigEntry detectEndpoint(URI link)
+    public void setStart(EndpointsConfigEntry start)
     {
+        this.start = start;
+    }
+
+    public FieldsAwareConfigEntry detectEndpoint(URI link)
+    {
+        AntPathMatcher matcher = new AntPathMatcher();
         String rawPath = link.getRawPath();
-        for (String path : this.endpoints.keySet())
+
+        for (FieldsAwareConfigEntry entry : this.endpoints)
         {
-            if (rawPath.contains(path))
+            if (matcher.match(entry.getUrl(), rawPath))
             {
-                return endpoints.get(path);
+                return entry;
             }
         }
         return null;

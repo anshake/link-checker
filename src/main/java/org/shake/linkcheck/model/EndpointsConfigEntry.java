@@ -2,15 +2,24 @@ package org.shake.linkcheck.model;
 
 import org.springframework.http.HttpMethod;
 
-import java.util.List;
 import java.util.Map;
 
 public class EndpointsConfigEntry
 {
+    private String url;
     private HttpMethod method;
-    private List<String> fields;
     private Map<String, String> headers;
     private String body;
+
+    public String getUrl()
+    {
+        return url;
+    }
+
+    public void setUrl(String url)
+    {
+        this.url = url;
+    }
 
     public HttpMethod getMethod()
     {
@@ -20,16 +29,6 @@ public class EndpointsConfigEntry
     public void setMethod(HttpMethod method)
     {
         this.method = method;
-    }
-
-    public List<String> getFields()
-    {
-        return fields;
-    }
-
-    public void setFields(List<String> fields)
-    {
-        this.fields = fields;
     }
 
     public Map<String, String> getHeaders()

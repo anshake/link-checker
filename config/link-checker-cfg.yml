@@ -1,21 +1,14 @@
-start-url: https://api.github.com/users/anshake
-
 setup:
+  start:
+    url: https://api.github.com/users/anshake
+    method: GET
   endpoints:
-    /anshake:
-        method: GET
-        fields:
-        - url
-        - followers_url
-        headers:
-          Content-Type: application/json
-          x-type: abcd;
-        body: '
-              {
-                "abc" : 123,
-                "a1": "s2"
-              }'
-    /subbase/endpoint2:
-        method: GET
-        fields:
-        - links.nested.link
+    - url: /**/anshake
+      method: GET
+      fields:
+      - url
+      - followers_url
+    - url: /users/anshake
+      method: GET
+      fields:
+      - links.nested.link

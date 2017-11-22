@@ -14,10 +14,31 @@ It stops when either or the following is `true`:
 ## Configuration
 
 ### `config/link-checker-cfg.yml`
-TBD
 
-### `config/endpoints.yml`
-TBD
+##### Entry point configuration
+
+Entry-point is the first URL link checker will visit.
+
+```
+setup:
+  start:
+    url: https://api.github.com/users/anshake
+    method: GET
+```
+
+##### Endpoints configuration
+
+Next you would need to configure endpoints which are considered when Link Checker analyses response of each API call.
+
+```
+setup:
+  endpoints:
+    - url: /**/anshake
+      method: GET
+      fields:
+      - url
+      - followers_url
+```
 
 Run
 ---

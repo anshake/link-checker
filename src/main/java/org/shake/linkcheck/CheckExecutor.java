@@ -1,11 +1,12 @@
 package org.shake.linkcheck;
 
 import org.shake.linkcheck.model.CheckResult;
+import org.shake.linkcheck.model.EndpointsConfig;
+import org.shake.linkcheck.model.EndpointsConfigEntry;
 import org.shake.linkcheck.result.CheckResultsCollector;
 import org.shake.linkcheck.result.CheckStatusReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URISyntaxException;
@@ -16,7 +17,7 @@ import java.util.concurrent.*;
 public class CheckExecutor
 {
     private final LinkCheckFactory checkFactory;
-    private final String startUrl;
+    private final EndpointsConfig endpointsConfig;
     private final CheckStatusReporter reporter;
     private final ExecutorService checkThreads = Executors.newFixedThreadPool(8);
     private final ExecutorService serviceThreads = Executors.newCachedThreadPool();
@@ -25,20 +26,27 @@ public class CheckExecutor
     private Queue<CheckResult> checkResults = new ArrayBlockingQueue<>(10000);
 
     public CheckExecutor(LinkCheckFactory checkFactory,
-                         @Value("${start-url}") String startUrl,
+                         EndpointsConfig endpointsConfig,
                          CheckStatusReporter reporter)
     {
         this.checkFactory = checkFactory;
-        this.startUrl = startUrl;
+        this.endpointsConfig = endpointsConfig;
         this.reporter = reporter;
     }
 
     void start() throws URISyntaxException, ExecutionException, InterruptedException
     {
+        EndpointsConfigEntry start = endpointsConfig.getStart();
+        if (start == null || start.getUrl() == null)
+        {
+            logger.warn("`setup.start` options are not set");
+            return;
+        }
+
         Future<CheckResultsCollector> orchestrator = serviceThreads.submit(
                 new CheckOrchestrator(linksToCheck, checkResults, checkFactory, null));
 
-        linksToCheck.offer(checkFactory.createCheck(startUrl));
+        linksToCheck.offer(checkFactory.createCheck(start.getUrl()));
         serviceThreads.submit(new InnerExecutor());
         serviceThreads.shutdown();
 
@@ -99,7 +107,6 @@ public class CheckExecutor
             }
             catch (Exception ex)
             {
-                logger.debug("ERROR when checking", ex);
                 result = new CheckResult(linkCheck.getOriginalLink(), ex.getMessage());
             }
 

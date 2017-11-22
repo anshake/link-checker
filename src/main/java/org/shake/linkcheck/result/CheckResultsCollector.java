@@ -18,44 +18,42 @@ public class CheckResultsCollector
     private Map<URI, CheckResult> visited = Maps.newLinkedHashMap();
 
     /**
-     *
-     * @param checkResult
-     * @return <code>false</code> if the collector accepts no more check results
+     * @param checkResult result of a link check
      */
-    public void storeCheckResult(CheckResult checkResult)
+    public synchronized void storeCheckResult(CheckResult checkResult)
     {
         if (checkResult == null)
         {
             return;
         }
 
-        logger.debug("[checked  ] {} '{}' {}", checkResult.getStatus(), checkResult.getMessage(), checkResult.getOriginalLink());
+        logger.debug("[checked] {} '{}' {}", checkResult.getStatus(), checkResult.getMessage(), checkResult
+                .getOriginalLink());
         toBeChecked.remove(checkResult.getOriginalLink());
         visited.put(checkResult.getOriginalLink(), checkResult);
     }
 
-    public boolean registerToBeChecked(URI originalLink)
+    public synchronized boolean registerToBeChecked(URI originalLink)
     {
         if (visited.containsKey(originalLink))
         {
-            logger.debug("{} has already been visited", originalLink);
             toBeChecked.remove(originalLink);
             return false;
         }
         boolean added = toBeChecked.add(originalLink);
-        if (!added)
+        if (added)
         {
-            logger.debug("{} has already been prepared (not visited yet)", originalLink);
+            logger.debug("[scheduled] {}", originalLink);
         }
         return added;
     }
 
-    boolean noMoreChecks()
+    synchronized boolean noMoreChecks()
     {
         return toBeChecked.isEmpty();
     }
 
-    int visitedCount()
+    synchronized int visitedCount()
     {
         return this.visited.size();
     }

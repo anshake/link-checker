@@ -3,7 +3,7 @@ package org.shake.linkcheck;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.shake.linkcheck.model.CheckResult;
 import org.shake.linkcheck.model.EndpointsConfig;
-import org.shake.linkcheck.model.EndpointsConfigEntry;
+import org.shake.linkcheck.model.FieldsAwareConfigEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -16,8 +16,8 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * - executes request using provided link
@@ -66,7 +66,7 @@ class LinkCheck
     @Nonnull
     CheckResult call() throws Exception
     {
-        EndpointsConfigEntry endpoint = config.detectEndpoint(link);
+        FieldsAwareConfigEntry endpoint = config.detectEndpoint(link);
         if (endpoint == null)
         {
             return new CheckResult(link, "Does not match any of specified endpoints");
@@ -75,7 +75,6 @@ class LinkCheck
         CheckResult result;
         try
         {
-            logger.debug("Checking '{}' ...", link);
             HttpHeaders headers = null;
             if (endpoint.getHeaders() != null)
             {
@@ -85,23 +84,37 @@ class LinkCheck
                     headers.add(header.getKey(), header.getValue());
                 }
             }
+
+            if (link.getScheme() == null)
+            {
+                throw new IllegalArgumentException("Link has be absolute");
+            }
+
+            logger.debug("Checking '{}' ...", link);
             HttpEntity<String> entity = new HttpEntity<>(endpoint.getBody(), headers);
             ResponseEntity<JsonNode> responseEntity = rest.exchange(link, endpoint.getMethod(), entity, JsonNode.class);
             result = new CheckResult(link, responseEntity.getStatusCode());
-            List<String> fields = endpoint.getFields();
+            Set<String> fields = endpoint.getFields();
             if (fields != null && !fields.isEmpty())
             {
                 JsonNode body = responseEntity.getBody();
-                for (String fld : fields)
+                if (body == null)
                 {
-                    try
+                    logger.warn("Request resulted in empty response");
+                }
+                else
+                {
+                    for (String fld : fields)
                     {
-                        Collection<URI> links = LinksUtil.link(fld, body);
-                        result.addCollectedLinks(fld, links);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.warn("Field {} does not seem to contains a link", fld);
+                        try
+                        {
+                            Collection<URI> links = LinksUtil.link(fld, body);
+                            result.addCollectedLinks(fld, links);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.warn("Field {} does not seem to contains a link ({})", fld, ex.getMessage());
+                        }
                     }
                 }
             }

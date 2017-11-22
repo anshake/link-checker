@@ -1,10 +1,11 @@
-/subbase/endpoint1:
-  method: GET
-  fields:
-  - links.bytype
-  - links.byname
-  - links.bycode
-/subbase/endpoint2:
-  method: GET
-  fields:
-  - links.nested.link
+  endpoints:
+    - url: /**/subbase/endpoint1
+      method: GET
+      fields:
+      - links.bytype
+      - links.byname
+      - links.bycode
+    - url: /**/subbase/endpoint2
+      method: GET
+      fields:
+      - links.nested.link

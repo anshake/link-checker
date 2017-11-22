@@ -2,8 +2,6 @@ baseprotocol: "file:"
 basedir: ./config
 fullbasedir: ${baseprotocol}${basedir}
 
-start-url: https://api.github.com/users/anshake
-
 output:
   report: ${fullbasedir}/out/report.tsv
 
