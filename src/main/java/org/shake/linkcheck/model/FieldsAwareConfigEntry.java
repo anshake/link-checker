@@ -1,17 +1,17 @@
 package org.shake.linkcheck.model;
 
-import java.util.Set;
+import java.util.List;
 
 public class FieldsAwareConfigEntry extends EndpointsConfigEntry
 {
-    private Set<String> fields;
+    private List<String> fields;
 
-    public Set<String> getFields()
+    public List<String> getFields()
     {
         return fields;
     }
 
-    public void setFields(Set<String> fields)
+    public void setFields(List<String> fields)
     {
         this.fields = fields;
     }

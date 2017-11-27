@@ -39,7 +39,7 @@ public class CheckExecutor
         EndpointsConfigEntry start = endpointsConfig.getStart();
         if (start == null || start.getUrl() == null)
         {
-            logger.warn("`setup.start` options are not set");
+            logger.warn("`setup.start.*` options are not set");
             return;
         }
 

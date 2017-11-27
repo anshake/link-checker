@@ -16,8 +16,8 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * - executes request using provided link
@@ -94,7 +94,7 @@ class LinkCheck
             HttpEntity<String> entity = new HttpEntity<>(endpoint.getBody(), headers);
             ResponseEntity<JsonNode> responseEntity = rest.exchange(link, endpoint.getMethod(), entity, JsonNode.class);
             result = new CheckResult(link, responseEntity.getStatusCode());
-            Set<String> fields = endpoint.getFields();
+            List<String> fields = endpoint.getFields();
             if (fields != null && !fields.isEmpty())
             {
                 JsonNode body = responseEntity.getBody();

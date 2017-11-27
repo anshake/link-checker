@@ -1,4 +1,6 @@
+
 # link-checker
+[![Build Status](https://travis-ci.org/anshake/link-checker.svg?branch=master)](https://travis-ci.org/anshake/link-checker)
 
 Link Checker is a (command-line) utility, which follows HTTP links found in a JSON document and tests their status.
 The most common use-case is when you need to test whether your RESTful API generates correct links.
